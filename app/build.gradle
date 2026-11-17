@@ -1,0 +1,64 @@
+plugins {
+    id 'com.android.application'
+}
+
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file('keystore.properties')
+if (keystorePropsFile.exists()) keystoreProps.load(new FileInputStream(keystorePropsFile))
+
+android {
+    namespace 'lol.yukichat.web'
+    compileSdk 37
+    compileSdkMinor 2
+
+    defaultConfig {
+        applicationId 'lol.yukichat.web'
+        minSdk 26
+        // 34, not 36: Android 16 would force predictive back and edge-to-edge on us.
+        targetSdk 34
+        versionCode 12
+        versionName '0.4.3'
+        buildConfigField 'String', 'API', '"https://vps.yukichat.lol:8443"'
+        buildConfigField 'String', 'UPDATE_JSON', '"https://yuki.yukichat.lol/yukiweb/android.json"'
+        // GeckoView ships every CPU type (~240 MB); phones are 64-bit ARM.
+        ndk { abiFilters 'arm64-v8a' }
+    }
+
+    buildFeatures { buildConfig true }
+
+    signingConfigs {
+        release {
+            if (keystorePropsFile.exists()) {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // No R8: shrinking an app this size needs more RAM than the build server has.
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        jniLibs { useLegacyPackaging true }
+    }
+}
+
+dependencies {
+    implementation 'org.mozilla.geckoview:geckoview:159.0.20261022150525'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation('com.journeyapps:zxing-android-embedded:4.3.0') { transitive = false } // QR scanner (no appcompat)
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'androidx.core:core:1.19.1' // FileProvider (GeckoView only brings it at runtime)
+}

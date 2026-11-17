@@ -1,0 +1,38 @@
+# deps / builds
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.gradle/
+build/
+dist/
+target/
+*.apk
+*.aab
+local.properties
+# secrets
+.env
+.env.*
+*.jks
+*.keystore
+*.key
+*.pem
+*.session
+*.session-journal
+keystore.properties
+signing.properties
+keys/
+# runtime data
+*.db
+*.db-*
+*.sqlite*
+*.log
+cache/
+work/
+# backups
+*.bak
+*.backup*
+*.pre-*
+*.orig
+.DS_Store

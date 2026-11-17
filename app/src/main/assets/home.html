@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Home</title>
+<script src="icons.js"></script>
+<style>
+:root{--bg:#fff;--text:#16181e;--dim:#6b7080;--soft:#f1f2f5;--soft2:#e6e8ec;--acc:#ffd23f;--onacc:#16181e;--accsoft:#fff6d9;--acctext:#94790f}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Roboto,sans-serif}
+body{min-height:100vh;padding:0 18px 48px}
+a{color:inherit;text-decoration:none}
+main{max-width:560px;margin:0 auto}
+.top{padding-top:7vh;display:flex;flex-direction:column;align-items:flex-start}
+.mark{width:44px;height:44px;border-radius:15px;background:var(--acc);color:var(--onacc);display:grid;place-items:center;animation:pop .5s cubic-bezier(.2,1.4,.4,1) both}
+.mark svg{width:35px;height:35px}
+.date{margin-top:22px;color:var(--dim);font-size:14px;font-weight:500;animation:up .45s .05s ease both}
+.hello{margin-top:2px;font-size:32px;line-height:1.15;font-weight:750;letter-spacing:-.03em;animation:up .45s .1s ease both}
+.quick{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;animation:up .45s .18s ease both}
+.quick a{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 2px 10px;border-radius:20px;background:var(--soft);font-size:12px;font-weight:500;transition:transform .12s,background .12s}
+.quick a:active{transform:scale(.95);background:var(--soft2)}
+.quick svg{width:22px;height:22px}
+.quick span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.join{margin-top:14px;display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:22px;background:var(--accsoft);animation:up .45s .22s ease both}
+.join:active{filter:brightness(.97)}
+.join .av{background:var(--bg)}
+.join .tx{flex:1;min-width:0}
+.join b{display:block;font-size:15px;font-weight:650}
+.join small{display:block;color:var(--acctext);font-size:13px}
+.join i{flex:none;font-style:normal;padding:8px 14px;border-radius:16px;background:var(--acc);color:var(--onacc);font-weight:700;font-size:13px}
+.tile small{margin-top:-6px;font-size:11px;color:var(--dim)}
+.search{margin-top:26px;height:60px;border-radius:30px;background:var(--soft);display:flex;align-items:center;gap:14px;padding:0 10px 0 22px;color:var(--dim);font-size:17px;transition:transform .12s,background .12s;animation:up .45s .15s ease both}
+.search:active{transform:scale(.98);background:var(--soft2)}
+.search>svg{width:22px;height:22px;flex:none;color:var(--text)}
+.search span{flex:1}
+.at{width:42px;height:42px;border-radius:21px;background:var(--acc);color:var(--onacc);display:grid;place-items:center;font-weight:700;font-size:19px;flex:none}
+h2{margin:34px 4px 14px;font-size:13px;font-weight:600;color:var(--dim);letter-spacing:.02em}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 6px;animation:up .45s .2s ease both}
+.tile{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.tile:active .ic{transform:scale(.9)}
+.ic{width:58px;height:58px;border-radius:19px;background:var(--soft);display:grid;place-items:center;transition:transform .12s;font-weight:700;font-size:21px;text-transform:uppercase;overflow:hidden;position:relative}
+.ic img{width:28px;height:28px;border-radius:6px;position:absolute}
+.app .ic{background:var(--accsoft);color:var(--acctext)}
+.ic svg{width:25px;height:25px}
+.tile span{font-size:12.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* Signed-in blocks: the same soft tiles as the rest of the page. */
+.card{background:var(--soft);border-radius:22px;padding:6px;animation:up .45s .2s ease both}
+.row{display:flex;align-items:center;gap:13px;min-height:58px;padding:8px 12px;border-radius:17px}
+.row:active{background:var(--soft2)}
+.av{flex:none;width:42px;height:42px;border-radius:50%;background:var(--soft2);display:grid;place-items:center;font-weight:700;font-size:17px;text-transform:uppercase;overflow:hidden;position:relative}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.av svg{width:21px;height:21px}
+.row .tx{flex:1;min-width:0}
+.row b{display:block;font-size:15px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.row small{display:block;margin-top:1px;color:var(--dim);font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.n{flex:none;min-width:24px;height:24px;padding:0 7px;border-radius:12px;background:var(--acc);color:var(--onacc);font-size:13px;font-weight:700;display:grid;place-items:center}
+.quiet{display:flex;align-items:center;gap:13px;padding:14px 12px;color:var(--dim);font-size:14px}
+.quiet svg{width:20px;height:20px;flex:none}
+.sent{background:var(--accsoft)}
+.sent .av{background:var(--acc);color:var(--onacc)}
+.sent small{color:var(--acctext)}
+.shelf{display:flex;gap:12px;overflow-x:auto;margin:0 -18px;padding:0 18px 2px;scroll-snap-type:x mandatory;scroll-padding:0 18px;scrollbar-width:none;animation:up .45s .25s ease both}
+.shelf::-webkit-scrollbar{display:none}
+.song{flex:none;width:118px;scroll-snap-align:start}
+.cover{position:relative;width:118px;height:118px;border-radius:18px;background:var(--soft);overflow:hidden;display:grid;place-items:center;color:var(--dim);transition:transform .12s}
+.song:active .cover{transform:scale(.95)}
+.cover svg{width:30px;height:30px}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cover i{position:absolute;left:7px;bottom:7px;padding:3px 8px;border-radius:10px;background:var(--acc);color:var(--onacc);font-size:11px;font-style:normal;font-weight:700}
+.song b{display:block;margin-top:8px;font-size:13.5px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.song small{display:block;color:var(--dim);font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+@keyframes up{from{opacity:0;transform:translateY(10px)}}
+@keyframes pop{from{opacity:0;transform:scale(.6)}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="mark"><svg viewBox="4 0 61 61"><path fill="#16181e" stroke="none" d="M12 47.5C8 43 6.5 37 7 31 8 17.5 19.5 8 34 8c13 0 22.5 7.5 25 18l1.6 10c1.8 2.6 2.4 5 2 8-.8 5.5-5 9-10.6 9H31c-7.5 0-14.5-1.5-19-5.5Z"/><path style="fill:var(--acc)" stroke="none" d="M34 28C22 29.2 13 35.5 9 44.4 15 39.1 23 34.5 34 33.2Z"/><rect style="fill:var(--acc)" stroke="none" x="28" y="20.5" width="34.5" height="13" rx="6.5"/><circle cx="36" cy="27" r="3.8" fill="none" stroke="#16181e" stroke-width="2.5"/><path d="m38.8 29.8 2.5 2.5" fill="none" stroke="#16181e" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+    <p class="date" id="date"></p>
+    <p class="hello" id="hello"></p>
+  </div>
+  <a class="search" href="yukiweb://focus"><svg viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg><span id="sp">Search or type an address</span><b class="at" onclick="event.preventDefault();location.href='yukiweb://at'">@</b></a>
+  <div class="quick" id="quick"></div>
+  <div id="join"></div>
+  <div id="sent"></div>
+  <h2 id="fh" hidden>Frequent</h2>
+  <div class="grid" id="freq"></div>
+  <div id="dash"></div>
+  <h2 id="ah">Yuki apps</h2>
+  <div class="grid" id="apps"></div>
+</main>
+<script>
+// The app hands over its theme, the most visited sites and your first name in the hash.
+let data = {};
+try { data = JSON.parse(decodeURIComponent(location.hash.slice(1)) || '{}'); } catch {}
+const css = document.documentElement.style;
+for (const [k, v] of Object.entries(data.c || {})) css.setProperty('--' + k, v);
+css.colorScheme = data.dark ? 'dark' : 'light';
+
+// Language comes from the app (the synced choice, else the phone's).
+const LANG = data.lang || 'en';
+const DICT = {
+  'Good night': ['Доброй ночи', 'Gute Nacht'], 'Good morning': ['Доброе утро', 'Guten Morgen'], 'Good afternoon': ['Добрый день', 'Guten Tag'],
+  'Good evening': ['Добрый вечер', 'Guten Abend'], 'Search or type an address': ['Поиск или адрес', 'Suchen oder Adresse eingeben'],
+  'Frequent': ['Часто посещаемые', 'Häufig besucht'], 'Yuki apps': ['Приложения Yuki', 'Yuki-Apps'], 'From your PC': ['С вашего компьютера', 'Von deinem PC'],
+  'Chats': ['Чаты', 'Chats'], 'No unread messages': ['Нет непрочитанных', 'Keine ungelesenen Nachrichten'], 'Mail': ['Почта', 'Mail'],
+  '{0} unread emails': ['Непрочитанных писем: {0}', '{0} ungelesene E-Mails'], 'Music': ['Музыка', 'Musik'], 'Now playing': ['Играет', 'Läuft'],
+  'Chat': ['Чат', 'Chat'], 'Wallet': ['Кошелёк', 'Wallet'],
+  'Scan QR': ['QR-код', 'QR scannen'], 'Bookmarks': ['Закладки', 'Lesezeichen'], 'History': ['История', 'Verlauf'], 'Private': ['Приватно', 'Privat'],
+  'Sign in with Yuki ID': ['Войдите через Yuki ID', 'Mit Yuki ID anmelden'], 'Bookmarks, tabs from your PC, chats and music here': ['Закладки, вкладки с ПК, чаты и музыка здесь', 'Lesezeichen, Tabs vom PC, Chats und Musik hier'],
+  'Sign in': ['Войти', 'Anmelden'], 'Search': ['Поиск', 'Suche'], 'Maps': ['Карты', 'Karten'], 'Docs': ['Документы', 'Docs'], 'Meet': ['Звонки', 'Meet'],
+  'Pages': ['Сайты', 'Pages'], 'Write': ['Статьи', 'Write'], 'Board': ['Доска', 'Board'], 'Vinyl': ['Винил', 'Vinyl'], 'Loader': ['Загрузчик', 'Loader'],
+};
+const t = (s, ...a) => ((LANG === 'ru' ? DICT[s]?.[0] : LANG === 'de' ? DICT[s]?.[1] : null) || s).replace(/\{(\d)\}/g, (_, i) => a[i]);
+document.documentElement.lang = LANG;
+
+const h = new Date().getHours();
+const greet = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : h < 23 ? 'Good evening' : 'Good night';
+document.getElementById('hello').textContent = t(greet) + (data.name ? ', ' + data.name : '');
+document.getElementById('date').textContent = new Date().toLocaleDateString(LANG === 'en' ? 'en-GB' : LANG, { weekday: 'long', day: 'numeric', month: 'long' });
+document.getElementById('sp').textContent = t('Search or type an address');
+document.getElementById('fh').textContent = t('Frequent');
+document.getElementById('ah').textContent = t('Yuki apps');
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const svg = n => `<svg viewBox="0 0 24 24">${(typeof ICONS !== 'undefined' && ICONS[n]) || ''}</svg>`;
+if (typeof ICONS !== 'undefined') {
+  ICONS.history = '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>';
+  ICONS.disc = '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/><path d="M6 12a6 6 0 0 1 6-6"/>';
+}
+// Quick actions: the things you'd otherwise dig for in the menu.
+document.getElementById('quick').innerHTML = [['qr', 'Scan QR', 'yukiweb://qr'], ['star', 'Bookmarks', 'yukiweb://bookmarks'],
+  ['history', 'History', 'yukiweb://history'], ['shield', 'Private', 'yukiweb://private']]
+  .map(([i, n, u]) => `<a href="${u}">${svg(i)}<span>${esc(t(n))}</span></a>`).join('');
+if (!data.name && !data.dash) document.getElementById('join').innerHTML = `<a class="join" href="yukiweb://account"><div class="av">${svg('user')}</div><div class="tx"><b>${t('Sign in with Yuki ID')}</b><small>${t('Bookmarks, tabs from your PC, chats and music here')}</small></div><i>${t('Sign in')}</i></a>`;
+// Every Yuki app, with the @ shortcut that opens it from the address bar.
+const APPS = [['chat', 'Chat', 'https://yukichat.lol', 'chat'], ['music', 'Music', 'https://music.yukichat.lol', 'music'], ['mail', 'Mail', 'https://mail.yukichat.lol', 'mail'],
+  ['search', 'Search', 'https://search.yukichat.lol', 'search'], ['location', 'Maps', 'https://maps.yukichat.lol', 'maps'], ['meet', 'Meet', 'https://meet.yukichat.lol', 'meet'],
+  ['wallet', 'Wallet', 'https://wallet.yukichat.lol', 'wallet'], ['file', 'Docs', 'https://docs.yukichat.lol', 'docs'], ['pages', 'Pages', 'https://pages.yukichat.lol', 'pages'],
+  ['write', 'Write', 'https://write.yukichat.lol', 'write'], ['board', 'Board', 'https://board.yukichat.lol', 'board'], ['disc', 'Vinyl', 'https://vinyl.yukichat.lol', 'vinyl'],
+  ['download', 'Loader', 'https://loader.yukichat.lol', 'loader'], ['chain', 'YukiChain', 'https://chain.yukichat.lol', 'chain'], ['user', 'Yuki ID', 'https://account.yukichat.lol', 'id'],
+  ['html', 'HTML', 'yukiweb://html', 'html']];
+document.getElementById('apps').innerHTML = APPS.map(([i, n, u, k]) => `<a class="tile app" href="${u}"><div class="ic">${svg(i)}</div><span>${esc(t(n))}</span><small>@${k}</small></a>`).join('');
+
+const host = u => { try { return new URL(u).hostname.replace(/^www\./, '') } catch { return u } };
+const sites = data.top || [];
+if (sites.length) {
+  document.getElementById('fh').hidden = false;
+  document.getElementById('freq').innerHTML = sites.slice(0, 8).map(([t, u]) => {
+    const hh = host(u), origin = (() => { try { return new URL(u).origin } catch { return '' } })();
+    // The site's own icon covers the letter once it loads.
+    return `<a class="tile" href="${esc(u)}"><div class="ic">${esc(hh[0] || '?')}<img src="${esc(origin)}/favicon.ico" alt="" onload="this.parentNode.firstChild.textContent=''" onerror="this.remove()"></div><span>${esc(hh.split('.').slice(-2, -1)[0] || hh)}</span></a>`;
+  }).join('');
+}
+
+// Signed in: tabs sent from the PC, chats and mail, YukiMusic (the app passes /api/yukiweb/dash).
+const d = data.dash;
+const av = (img, letter, icon) => `<div class="av">${icon ? svg(icon) : esc((letter || '?')[0])}${img ? `<img src="${esc(img)}" alt="" onerror="this.remove()">` : ''}</div>`;
+if (d && d.inbox && d.inbox.length) {
+  document.getElementById('sent').innerHTML = `<h2>${t('From your PC')}</h2><div class="card sent">`
+    + d.inbox.map(x => `<a class="row" href="yukiweb://inbox/${+x.id}">${av('', '', 'globe')}<div class="tx"><b>${esc(x.title || host(x.url))}</b><small>${esc(host(x.url))}</small></div></a>`).join('') + '</div>';
+}
+if (d) {
+  let html = `<h2>${t('Chats')}</h2><div class="card">`;
+  const chats = d.chats || [], mail = d.mail && d.mail.unread ? d.mail : null;
+  html += chats.map(c => `<a class="row" href="https://yukichat.lol/?chat=${+c.id}">${av(c.avatar, c.name)}<div class="tx"><b>${esc(c.name)}</b></div><span class="n">${+c.unread}</span></a>`).join('');
+  if (mail) {
+    const m = mail.last && mail.last[0];
+    html += `<a class="row" href="https://mail.yukichat.lol">${av('', '', 'mail')}<div class="tx"><b>${esc(t('{0} unread emails', mail.unread))}</b>${m ? `<small>${esc((m.sender_name || m.sender_email || '') + ': ' + (m.subject || ''))}</small>` : ''}</div></a>`;
+  }
+  if (!chats.length && !mail) html += `<div class="quiet">${svg('chat')}${t('No unread messages')}</div>`;
+  html += '</div>';
+  const mu = d.music || {}, songs = [...(mu.playing ? [{ ...mu.playing, now: 1 }] : []), ...(mu.recent || [])].slice(0, 8);
+  if (songs.length) {
+    html += `<h2>${t('Music')}</h2><div class="shelf">` + songs.map(x => `<a class="song" href="${esc(x.url)}"><div class="cover">${svg('music')}${x.cover ? `<img src="${esc(x.cover)}" alt="" onerror="this.remove()">` : ''}${x.now ? `<i>${t('Now playing')}</i>` : ''}</div><b>${esc(x.title)}</b><small>${esc(x.artist)}</small></a>`).join('') + '</div>';
+  }
+  document.getElementById('dash').innerHTML = html;
+}
+</script>
+</body>
+</html>

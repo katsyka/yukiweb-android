@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>#22 pixel race</title>
+<style>
+:root{--bg:#fff;--ink:#16181e;--mute:#6b7080;--soft:#f1f2f5}
+@media (prefers-color-scheme:dark){:root{--bg:#121318;--ink:#eceef3;--mute:#8d92a0;--soft:#22242c}}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{display:flex;flex-direction:column;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,sans-serif;touch-action:none}
+header{width:100%;max-width:420px}
+h1{font-size:22px;letter-spacing:-.02em}
+p{color:var(--mute);font-size:13px}
+#wrap{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+canvas{display:block;height:100%;max-width:100%;aspect-ratio:9/16;object-fit:contain;image-rendering:pixelated;border-radius:14px;background:var(--soft);touch-action:none}
+.row{display:flex;align-items:center;gap:12px;width:100%;max-width:420px}
+.row span{flex:1;color:var(--mute);font-size:12px}
+#drs{width:96px;height:56px;border:0;border-radius:28px;background:#ffd23f;color:#16181e;font:700 16px system-ui,sans-serif;letter-spacing:.06em;touch-action:none}
+#drs:active,#drs.on{transform:scale(.95);filter:brightness(.92)}
+</style>
+</head>
+<body>
+<header><h1 id="h"></h1><p id="s"></p></header>
+<div id="wrap"><canvas id="c" width="180" height="320"></canvas></div>
+<div class="row"><span id="k"></span><button id="drs">DRS</button></div>
+<script>
+const $ = id => document.getElementById(id);
+const TEXTS = {
+  en: ['Lights out', "Yuki's #22 is on the grid. No internet required.", 'Drag to steer · hold DRS to boost', 'TAP TO RACE', 'TAP TO GO AGAIN'],
+  ru: ['Огни погасли', 'Болид Юки №22 на стартовой решётке. Интернет не нужен.', 'Веди пальцем — руль · держи DRS — ускорение', 'НАЖМИ — СТАРТ', 'НАЖМИ — ЕЩЁ РАЗ'],
+  de: ['Lights out', 'Yukis #22 steht in der Startaufstellung. Kein Internet nötig.', 'Wischen zum Lenken · DRS halten zum Boosten', 'TIPPEN ZUM START', 'NOCHMAL TIPPEN'],
+};
+const LANG = (navigator.language || 'en').slice(0, 2), TX = TEXTS[LANG] || TEXTS.en;
+document.documentElement.lang = TEXTS[LANG] ? LANG : 'en';
+document.title = TX[0]; $('h').textContent = TX[0]; $('s').textContent = TX[1]; $('k').textContent = TX[2];
+
+// --- #22 pixel F1, portrait ------------------------------------------------
+const cv = $('c'), g = cv.getContext('2d'), W = 180, H = 320, RL = 30, RR = 150, PY = H - 44;
+g.imageSmoothingEnabled = false;
+const DARK = matchMedia('(prefers-color-scheme: dark)').matches;
+const C = DARK
+  ? { kerb: '#5a5f6c', line: '#3a3d47', ink: '#a9adb5', dim: '#6b7080', bar: '#2c2f38', gold: '#ffd23f' }
+  : { kerb: '#8a8f9c', line: '#d9dce2', ink: '#6b7080', dim: '#a9adb5', bar: '#e4e6eb', gold: '#a16b00' };
+const CAR = [
+  'RRNNNNNNRR', '....NN....', 'KK..NN..KK', 'KK.NNNN.KK', 'KK.NYYN.KK', '...NNNN...',
+  '...NRRN...', '..NNKKNN..', '..NNBBNN..', '..NNNNNN..', '.NNRRRRNN.', '.NNNNNNNN.',
+  'KKNNNNNNKK', 'KKNNNNNNKK', 'KKNNYYNNKK', 'KK.NNNN.KK', '....NN....', 'RRRRRRRRRR',
+];
+const PAL = { N: DARK ? '#3a55c4' : '#1e2a5a', R: '#e10600', Y: '#ffd23f', K: '#111', B: '#3b82f6' };
+// Rivals stay grey; only #22 gets colour.
+const RIVALS = DARK
+  ? [{ N: '#5a5f6c', R: '#6b7080', Y: '#6b7080', K: '#33363f', B: '#6b7080' }, { N: '#70747f', R: '#80848f', Y: '#80848f', K: '#33363f', B: '#80848f' }]
+  : [{ N: '#a9adb5', R: '#8a8f9c', Y: '#8a8f9c', K: '#6b7080', B: '#8a8f9c' }, { N: '#bfc3ca', R: '#9a9ea8', Y: '#9a9ea8', K: '#6b7080', B: '#9a9ea8' }];
+function sprite(p) {
+  const o = document.createElement('canvas'); o.width = 10; o.height = 18;
+  const x = o.getContext('2d');
+  CAR.forEach((row, j) => [...row].forEach((ch, i) => { if (ch !== '.') { x.fillStyle = p[ch] || PAL[ch]; x.fillRect(i, j, 1, 1) } }));
+  return o;
+}
+const ME = sprite({}), RS = RIVALS.map(sprite);
+
+let mode = 'idle', px = W / 2, aim = W / 2, spd = 0, dist = 0, drs = 1, passed = 0, riv = [], next = 0, scroll = 0, flash = 0, t0 = 0, best = 0, wait = 0;
+try { best = +localStorage.getItem('yw-best') || 0 } catch {}
+const keys = {};
+let boostTouch = false;
+
+function start() { mode = 'run'; px = aim = W / 2; spd = 110; dist = 0; drs = 1; passed = 0; riv = []; next = 80; flash = 0 }
+function crash() {
+  mode = 'crash'; wait = .6;
+  try { navigator.vibrate && navigator.vibrate(120) } catch {}
+  if (dist > best) { best = dist; try { localStorage.setItem('yw-best', best) } catch {} }
+}
+const pos = () => Math.max(1, 20 - passed);
+
+function spawn() {
+  riv.push({ x: RL + 12 + Math.random() * (RR - RL - 24), y: -20, v: spd * (.45 + Math.random() * .25),
+    s: RS[Math.random() * RS.length | 0], ph: Math.random() * 100, w: Math.random() < .3 ? 20 : 0, p: 0 });
+}
+
+function update(dt) {
+  const steer = ((keys.arrowright || keys.d) ? 1 : 0) - ((keys.arrowleft || keys.a) ? 1 : 0);
+  if (steer) aim = px + steer * 40;
+  aim = Math.max(10, Math.min(W - 10, aim));
+  const d = aim - px, max = 130 * dt;
+  px += Math.max(-max, Math.min(max, d));
+  const boost = (keys.arrowup || keys.w || boostTouch) && drs > 0;
+  drs = Math.max(0, Math.min(1, drs + (boost ? -.5 : .08) * dt));
+  const base = Math.min(260, 110 + dist / 40), off = px < RL + 5 || px > RR - 5;
+  spd += ((off ? base * .45 : base + (boost ? 90 : 0)) - spd) * Math.min(1, dt * 2);
+  scroll = (scroll + spd * dt) % 32;
+  dist += spd * dt * .6;
+  next -= spd * dt;
+  if (next <= 0) { spawn(); next = 80 + Math.random() * 100 - Math.min(40, dist / 200) }
+  for (const r of riv) {
+    r.y += (spd - r.v) * dt;
+    r.x = Math.max(RL + 6, Math.min(RR - 6, r.x + Math.sin((r.y + r.ph) / 30) * r.w * dt));
+    if (!r.p && r.y > PY + 18) { r.p = 1; passed++; if (passed === 19) flash = 2.5 }
+    if (Math.abs(r.x - px) < 9 && Math.abs(r.y - PY) < 16) return crash();
+  }
+  riv = riv.filter(r => r.y < H + 20 && r.y > -60);
+  if (flash > 0) flash -= dt;
+}
+
+function text(s, x, y, c = C.ink, size = 8) {
+  g.font = `bold ${size}px monospace`; g.fillStyle = c; g.fillText(s, x, y);
+}
+
+function draw() {
+  const s = Math.floor(scroll);
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = C.kerb;
+  for (let y = -16 + s % 16; y < H; y += 16) { g.fillRect(RL - 2, y, 2, 10); g.fillRect(RR, y, 2, 10) }
+  g.fillStyle = C.line;
+  for (let y = -32 + s; y < H; y += 32) g.fillRect(W / 2 - 1, y, 2, 12);
+  for (const r of riv) g.drawImage(r.s, Math.round(r.x - 5), Math.round(r.y - 9));
+  if (mode === 'run' && (keys.arrowup || keys.w || boostTouch) && drs > 0) { g.fillStyle = '#ffd23f'; g.fillRect(Math.round(px - 1), PY + 9, 2, 3) }
+  g.drawImage(ME, Math.round(px - 5), PY - 9);
+
+  g.textAlign = 'center';
+  if (mode === 'idle') {
+    text(TX[3], W / 2, 120, C.ink, 10);
+    if (best) text(`BEST ${(best / 1000).toFixed(2)} KM`, W / 2, 136, C.dim);
+    return;
+  }
+  g.textAlign = 'right';
+  text(`P${pos()}  ${(dist / 1000).toFixed(2)} KM`, W - 6, 14);
+  if (best) text(`BEST ${(best / 1000).toFixed(2)}`, W - 6, 24, C.dim);
+  g.fillStyle = C.bar; g.fillRect(6, 8, 40, 3);
+  g.fillStyle = drs > .05 ? '#ffd23f' : C.dim; g.fillRect(6, 8, 40 * drs, 3);
+  g.textAlign = 'left';
+  text('DRS', 6, 21, C.dim);
+
+  g.textAlign = 'center';
+  if (flash > 0) text('P1!', W / 2, 60, C.gold, 14);
+  if (mode === 'crash') {
+    text('BOX BOX', W / 2, 120, C.ink, 14);
+    text(TX[4], W / 2, 138, C.dim);
+  }
+}
+
+function frame(t) {
+  const dt = Math.min(.05, (t - t0) / 1000 || 0); t0 = t;
+  if (mode === 'run') update(dt);
+  else if (wait > 0) wait -= dt;
+  draw();
+  requestAnimationFrame(frame);
+}
+
+addEventListener('keydown', e => {
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault();
+  keys[e.key.toLowerCase()] = 1;
+  if ((e.key === ' ' || e.key === 'Enter') && mode !== 'run' && wait <= 0) start();
+});
+addEventListener('keyup', e => { keys[e.key.toLowerCase()] = 0 });
+
+// Touch: drag anywhere (outside the DRS button) to steer, relative to where the finger landed.
+let steerId = null, sx = 0, sAim = 0;
+document.addEventListener('pointerdown', e => {
+  if (e.target.id === 'drs') return;
+  if (mode !== 'run') { if (wait <= 0) start(); return }
+  steerId = e.pointerId; sx = e.clientX; sAim = px;
+});
+document.addEventListener('pointermove', e => {
+  if (e.pointerId !== steerId) return;
+  aim = sAim + (e.clientX - sx) * W / cv.getBoundingClientRect().width * 1.3;
+});
+const endSteer = e => { if (e.pointerId === steerId) { steerId = null; aim = px } };
+document.addEventListener('pointerup', endSteer);
+document.addEventListener('pointercancel', endSteer);
+// Stop the page from scrolling / pull-to-refresh while racing.
+document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+
+const drsBtn = $('drs');
+drsBtn.addEventListener('pointerdown', e => {
+  e.preventDefault(); drsBtn.setPointerCapture(e.pointerId);
+  if (mode !== 'run') { if (wait <= 0) start(); return }
+  boostTouch = true; drsBtn.classList.add('on');
+});
+const drsOff = () => { boostTouch = false; drsBtn.classList.remove('on') };
+drsBtn.addEventListener('pointerup', drsOff);
+drsBtn.addEventListener('pointercancel', drsOff);
+drsBtn.addEventListener('contextmenu', e => e.preventDefault());
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

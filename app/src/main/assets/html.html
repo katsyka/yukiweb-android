@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HTML playground</title>
+<script src="theme.js"></script>
+<script src="i18n.js"></script>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:var(--page);color:var(--text);font:14px "Segoe UI",system-ui,sans-serif}
+#ed{display:flex;flex-direction:column;height:100%}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line2);background:var(--surface)}
+header b{font-size:15px}
+header span{flex:1;color:var(--dim);font-size:12px}
+button{display:flex;align-items:center;gap:6px;height:32px;padding:0 14px;border:0;border-radius:8px;background:var(--soft);color:var(--text);font:inherit;font-weight:600;cursor:pointer}
+button:hover{background:var(--hover)}
+button.go{background:var(--acc);color:var(--on-acc)}
+button.go:hover{background:var(--acc2)}
+button .ic{width:15px;height:15px}
+textarea{flex:1;width:100%;padding:16px 18px;border:0;outline:0;resize:none;background:var(--page);color:var(--text);font:13.5px/1.55 Consolas,"Cascadia Mono",monospace;tab-size:2;white-space:pre}
+textarea::placeholder{color:var(--dim2)}
+/* The result fills the tab; its code runs in a sandbox with its own origin, so it can't
+   reach YukiWeb's storage (your Yuki ID sign-in lives there). */
+iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#fff}
+#back{position:fixed;right:14px;bottom:14px;opacity:.35;box-shadow:0 2px 10px rgba(0,0,0,.2);transition:opacity .15s}
+#back:hover{opacity:1}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="ed">
+  <header><b>HTML playground</b><span>Paste a page and it opens right away · <b>Ctrl+Enter</b> runs</span>
+    <button id="clear">Clear</button><button id="pub" title="Publish to Yuki Pages"></button><button id="run" class="go"></button></header>
+  <textarea id="code" spellcheck="false" placeholder="Paste HTML here…&#10;&#10;<h1>Hello</h1>&#10;<script>document.body.append(' from YukiWeb')</script>"></textarea>
+</div>
+<iframe id="out" hidden sandbox="allow-scripts allow-forms allow-modals allow-popups allow-pointer-lock allow-downloads"></iframe>
+<button id="back" hidden title="Back to the code (Esc)"></button>
+<script src="icons.js"></script>
+<script>
+const $ = id => document.getElementById(id), code = $('code');
+$('run').innerHTML = icon('forward') + 'Run';
+$('back').innerHTML = icon('pages') + 'Edit';
+$('pub').innerHTML = icon('pages') + 'Publish';
+try { code.value = localStorage.getItem('yw-html') || ''; } catch {}
+let saveT = 0;
+code.oninput = () => { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem('yw-html', code.value); } catch {} }, 400); };
+
+function run() {
+  if (!code.value.trim()) return;
+  try { localStorage.setItem('yw-html', code.value); } catch {}
+  const t = code.value.match(/<title>([^<]*)<\/title>/i);
+  document.title = t ? t[1] : 'HTML playground';
+  $('out').srcdoc = code.value;
+  $('out').hidden = $('back').hidden = false;
+  $('ed').hidden = true;
+}
+function edit() {
+  $('out').hidden = $('back').hidden = true;
+  $('out').srcdoc = '';
+  $('ed').hidden = false;
+  document.title = 'HTML playground';
+  code.focus();
+}
+$('run').onclick = run;
+// Publish: Yuki Pages' create page picks the HTML up from the address (#yw-html=) as index.html.
+$('pub').onclick = () => {
+  if (!code.value.trim()) return;
+  const bytes = new TextEncoder().encode(code.value);
+  if (bytes.length > 1500000) return alert(tr('This page is too big to send this way. Save it as a file and upload it on pages.yukichat.lol.'));
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 32768) bin += String.fromCharCode(...bytes.subarray(i, i + 32768));
+  open('https://pages.yukichat.lol/create#yw-html=' + btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''), '_blank');
+};
+$('back').onclick = edit;
+$('clear').onclick = () => { code.value = ''; code.oninput(); code.focus(); };
+// Pasting into an empty editor is "show me this page": run it straight away.
+code.addEventListener('paste', () => { if (!code.value.trim()) setTimeout(run, 0); });
+code.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    document.execCommand('insertText', false, '  ');
+  }
+});
+addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); $('ed').hidden ? edit() : run(); }
+  else if (e.key === 'Escape' && $('ed').hidden) edit();
+});
+code.focus();
+</script>
+</body>
+</html>
