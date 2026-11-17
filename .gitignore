@@ -36,3 +36,4 @@ work/
 *.pre-*
 *.orig
 .DS_Store
+*.bak*
